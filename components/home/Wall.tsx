@@ -60,7 +60,7 @@ const Wall: React.FC<WallProps> = ({ navigate, t }) => {
             <div className={`scrolling-wrapper ${animationClass}`}>
                 {[...images, ...images].map((imageUrl, i) => (
                     <div key={`${imageUrl}-${i}`} className="w-48 h-48 shrink-0 mx-2">
-                        <img src={imageUrl} alt="" className="rounded-lg w-full h-full object-cover fade-in-on-load" loading="lazy" />
+                        <img src={imageUrl} alt="" className="rounded-lg w-full h-full object-cover" loading="lazy" />
                     </div>
                 ))}
             </div>
@@ -68,13 +68,14 @@ const Wall: React.FC<WallProps> = ({ navigate, t }) => {
     );
 
     return (
-        <div className="py-24 md:py-20 sm:py-16 bg-[#0A0A10] text-center">
-            <div className="container mx-auto px-4">
-                <h2 className="text-4xl sm:text-3xl font-orbitron font-bold mb-4">{t('wallTitle')}</h2>
+        <div className="py-24 md:py-20 sm:py-16 bg-background text-center relative overflow-hidden">
+            <div className="absolute inset-0 w-full h-full bg-wall-pattern bg-cover bg-center opacity-5"></div>
+            <div className="container mx-auto px-4 relative">
+                <h2 className="text-4xl sm:text-3xl font-orbitron font-bold mb-4 text-white">{t('wallTitle')}</h2>
                 <p className="text-lg text-gray-400 mb-14 md:mb-10 sm:mb-8">
                     {t('wallDesc')}
                 </p>
-                <a href="#" onClick={(e) => { e.preventDefault(); navigate('games'); }} className="bg-theme-gradient text-white text-lg font-bold rounded-lg px-8 py-4 hover-glow transition-all">
+                <a href="#" onClick={(e) => { e.preventDefault(); navigate('games'); }} className="bg-secondary text-white text-lg font-bold rounded-lg px-8 py-4 transition-all shadow-glow-secondary transform hover:scale-105">
                     {t('wallBtn')}
                 </a>
             </div>
@@ -85,8 +86,8 @@ const Wall: React.FC<WallProps> = ({ navigate, t }) => {
                     {renderRow(row2, 'animate-marquee-left')}
                     {renderRow(row3, 'animate-marquee-right')}
                 </div>
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <span className="text-white text-xl font-bold glass px-6 py-3 rounded-lg">{t('viewAllGames')}</span>
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white text-xl font-bold bg-primary/20 backdrop-blur-sm px-6 py-3 rounded-lg border border-primary/50 shadow-glow-primary">{t('viewAllGames')}</span>
                 </div>
             </a>
         </div>
