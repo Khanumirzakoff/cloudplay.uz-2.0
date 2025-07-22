@@ -3,32 +3,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import { GlobeIcon, LoginIcon, MenuIcon, CloseIcon, ChevronDownIcon } from './icons';
 import { Language, User } from '../types';
 import Logo from './Logo';
+import { useAppStore } from '../store/store';
 
 interface HeaderProps {
-    isSidebarOpen: boolean;
-    setIsSidebarOpen: () => void;
-    isLoggedIn: boolean;
     navigate: (page: string, options?: object) => void;
-    language: Language;
-    setLanguage: React.Dispatch<React.SetStateAction<Language>>;
     t: (key: string) => string;
-    onLoginClick: () => void;
     onLogout: () => void;
-    currentUser: User | null;
 }
 
 const Header: React.FC<HeaderProps> = ({
-    isSidebarOpen,
-    setIsSidebarOpen,
-    isLoggedIn,
     navigate,
-    language,
-    setLanguage,
     t,
-    onLoginClick,
     onLogout,
-    currentUser
 }) => {
+    const { isSidebarOpen, isLoggedIn, language, currentUser, actions } = useAppStore();
     const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
     const langMenuRef = useRef<HTMLDivElement>(null);
@@ -41,7 +29,7 @@ const Header: React.FC<HeaderProps> = ({
     ];
 
     const handleLanguageChange = (langCode: Language) => {
-        setLanguage(langCode);
+        actions.setLanguage(langCode);
         setIsLangMenuOpen(false);
     };
 
@@ -119,7 +107,7 @@ const Header: React.FC<HeaderProps> = ({
                         <div className="h-8 w-px bg-white/20 hidden lg:block"></div>
                         
                         {!isLoggedIn ? (
-                            <button onClick={onLoginClick} className="bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white transition-colors rounded-lg px-4 py-2 hidden lg:flex items-center space-x-2">
+                            <button onClick={actions.openAuthModal} className="bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white transition-colors rounded-lg px-4 py-2 hidden lg:flex items-center space-x-2">
                                 <LoginIcon className="w-5 h-5" />
                                 <span>{t('login')}</span>
                             </button>
@@ -153,7 +141,7 @@ const Header: React.FC<HeaderProps> = ({
                         )}
                     </div>
 
-                    <button type="button" onClick={setIsSidebarOpen} className="p-2 ml-2 lg:hidden text-gray-200 hover:bg-white/10 rounded-md">
+                    <button type="button" onClick={actions.toggleSidebar} className="p-2 ml-2 lg:hidden text-gray-200 hover:bg-white/10 rounded-md">
                         {isSidebarOpen ? <CloseIcon className="w-6 h-6" /> : <MenuIcon className="w-6 h-6" />}
                     </button>
                 </div>

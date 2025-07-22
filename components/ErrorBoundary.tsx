@@ -1,6 +1,7 @@
 import { Component, ReactNode } from 'react';
 import { Language } from '../types';
 import { translations } from '../translations';
+import { loggingService } from '../services/loggingService';
 
 interface Props {
   children: ReactNode;
@@ -22,9 +23,8 @@ class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  public componentDidCatch() {
-    // Xato boshqaruvi endi markazlashtirilgan loggingService orqali amalga oshiriladi
-    // console.error('Uncaught error:', error, errorInfo);
+  public componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    loggingService.logError(error, { componentStack: errorInfo.componentStack });
   }
 
   private getTranslation(key: string): string {

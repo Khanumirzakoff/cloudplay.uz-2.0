@@ -5,29 +5,25 @@ import { ToastProvider, useToast } from './components/Toast';
 import Header from './components/Header';
 import Sidebar from './components/Sidebar';
 import AuthModal from './components/AuthModal';
-import Hero from './components/home/Hero';
-import StartToPlay from './components/home/StartToPlay';
-import Advantages from './components/home/Advantages';
-import Subscriptions from './components/home/Subscriptions';
-import Wall from './components/home/Wall';
-import CtaSection from './components/home/TryFree';
 import Footer from './components/Footer';
 import FooterBottom from './components/FooterBottom';
-import DownloadPage from './components/DownloadPage';
-import SystemRequirementsPage from './components/SystemRequirementsPage';
-import GamesPage from './components/GamesPage';
-import AllGamesPage from './components/AllGamesPage';
-import HowToStartPage from './components/HowToStartPage';
-import GuidesPage from './components/GuidesPage';
-import GameDetailsPage from './components/GameDetailsPage';
-import AboutServicePage from './components/AboutServicePage';
-import SupportPage from './components/SupportPage';
-import NvidiaTechPage from './components/DownloadModal';
+import DownloadPage from './pages/DownloadPage';
+import SystemRequirementsPage from './pages/SystemRequirementsPage';
+import GamesPage from './pages/GamesPage';
+import AllGamesPage from './pages/AllGamesPage';
+import HowToStartPage from './pages/HowToStartPage';
+import GuidesPage from './pages/GuidesPage';
+import GameDetailsPage from './pages/GameDetailsPage';
+import AboutServicePage from './pages/AboutServicePage';
+import SupportPage from './pages/SupportPage';
+import NvidiaTechPage from './pages/NvidiaTechPage';
+import HomePage from './pages/HomePage';
 import { Game, Language, User, NavigateOptions } from './types';
 import { translations } from './translations';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { api } from './services/api';
 import { loggingService } from './services/loggingService'; // Import loggingService
+import { useAppStore } from './store/store';
 
 type TranslationKey = keyof typeof translations.ENG;
 
@@ -65,12 +61,15 @@ const getInitialPage = (): string => {
 };
 
 const AppContent: React.FC = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useLocalStorage('isLoggedIn', false);
-  const [currentUser, setCurrentUser] = useLocalStorage<User | null>('currentUser', null);
+  const {
+    isSidebarOpen,
+    isAuthModalOpen,
+    isLoggedIn,
+    currentUser,
+    language,
+    actions,
+  } = useAppStore();
   const [currentPage, setCurrentPage] = useState(getInitialPage());
-  const [language, setLanguage] = useLocalStorage<Language>('appLanguage', getInitialLanguage());
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [activeGameFilter, setActiveGameFilter] = useState('All Games');
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,10 +79,9 @@ const AppContent: React.FC = () => {
   const handleLogin = async (email: string, password: string) => {
     try {
       const user = await api.login(email, password);
-      setIsLoggedIn(true);
-      setCurrentUser(user);
+      actions.login(user);
       addToast(t('loginSuccess'), 'success');
-      setIsAuthModalOpen(false);
+      actions.closeAuthModal();
     } catch (error) {
       const errorMessage = error instanceof Error ? t(error.message) : 'An error occurred';
       addToast(errorMessage, 'error');
@@ -94,10 +92,9 @@ const AppContent: React.FC = () => {
   const handleRegister = async (email: string, password: string, username: string) => {
     try {
       const user = await api.register(username, email, password);
-      setIsLoggedIn(true);
-      setCurrentUser(user);
+      actions.login(user);
       addToast(t('registerSuccess'), 'success');
-      setIsAuthModalOpen(false);
+      actions.closeAuthModal();
     } catch (error) {
       const errorMessage = error instanceof Error ? t(error.message) : 'An error occurred';
       addToast(errorMessage, 'error');
@@ -107,8 +104,7 @@ const AppContent: React.FC = () => {
 
   const handleLogout = () => {
     api.logout();
-    setIsLoggedIn(false);
-    setCurrentUser(null);
+    actions.logout();
   };
 
   // Handle browser back/forward buttons
@@ -175,8 +171,8 @@ const AppContent: React.FC = () => {
     
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setIsSidebarOpen(false);
-  }, []);
+    actions.toggleSidebar();
+  }, [actions]);
 
   const renderCurrentPage = useCallback(() => {
     switch (currentPage) {
@@ -202,16 +198,7 @@ const AppContent: React.FC = () => {
         return <SupportPage navigate={navigate} t={t} />;
       case 'home':
       default:
-        return (
-          <div>
-            <Hero navigate={navigate} t={t} />
-            <StartToPlay navigate={navigate} t={t} />
-            <Advantages navigate={navigate} t={t} />
-            <Subscriptions navigate={navigate} t={t} />
-            <Wall navigate={navigate} t={t} />
-            <CtaSection navigate={navigate} t={t} />
-          </div>
-        );
+        return <HomePage navigate={navigate} t={t} />;
     }
   }, [currentPage, navigate, t, activePlatform, activeGameFilter, searchQuery, selectedGame]);
 
@@ -220,13 +207,13 @@ const AppContent: React.FC = () => {
         <div className="bg-[#0A0A10] text-gray-200 overflow-x-hidden">
           <Header
             isSidebarOpen={isSidebarOpen}
-            setIsSidebarOpen={() => setIsSidebarOpen(!isSidebarOpen)}
+            setIsSidebarOpen={actions.toggleSidebar}
             isLoggedIn={isLoggedIn}
             language={language}
-            setLanguage={setLanguage}
+            setLanguage={actions.setLanguage}
             navigate={navigate}
             t={t}
-            onLoginClick={() => setIsAuthModalOpen(true)}
+            onLoginClick={actions.openAuthModal}
             onLogout={handleLogout}
             currentUser={currentUser}
           />
@@ -235,7 +222,7 @@ const AppContent: React.FC = () => {
             isLoggedIn={isLoggedIn}
             navigate={navigate}
             t={t}
-            onLoginClick={() => setIsAuthModalOpen(true)}
+            onLoginClick={actions.openAuthModal}
             onLogout={handleLogout}
             currentUser={currentUser}
           />
@@ -247,12 +234,12 @@ const AppContent: React.FC = () => {
           {isSidebarOpen && (
             <div 
               className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden" 
-              onClick={() => setIsSidebarOpen(false)}
+              onClick={actions.toggleSidebar}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
-                  setIsSidebarOpen(false);
+                  actions.toggleSidebar();
                 }
               }}
               aria-label="Sidebar yopish"
@@ -261,7 +248,7 @@ const AppContent: React.FC = () => {
         </div>
         <AuthModal
           isOpen={isAuthModalOpen}
-          onClose={() => setIsAuthModalOpen(false)}
+          onClose={actions.closeAuthModal}
           onLogin={handleLogin}
           onRegister={handleRegister}
           t={t}

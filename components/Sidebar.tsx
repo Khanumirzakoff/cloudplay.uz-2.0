@@ -2,40 +2,34 @@
 import React from 'react';
 import { LoginIcon, LogoutIcon } from './icons';
 import { User } from '../types';
+import { useAppStore } from '../store/store';
 
 interface SidebarProps {
-  isOpen: boolean;
-  isLoggedIn: boolean;
   navigate: (page: string, options?: object) => void;
   t: (key: string) => string;
-  onLoginClick: () => void;
   onLogout: () => void;
-  currentUser: User | null;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
-    isOpen,
-    isLoggedIn,
     navigate,
     t,
-    onLoginClick,
     onLogout,
-    currentUser
 }) => {
+  const { isSidebarOpen, isLoggedIn, currentUser, actions } = useAppStore();
   return (
     <div
       className={`fixed top-[72px] right-0 h-[calc(100vh-72px)] w-72 bg-[#101018] shadow-lg transform transition-transform duration-300 ease-in-out z-50 lg:hidden ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
+        isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
       }`}
     >
         <aside className="p-4 flex flex-col h-full">
             {!isLoggedIn ? (
                 <div className="flex flex-col space-y-4 mb-4">
-                    <button onClick={onLoginClick} className="bg-white/10 text-white text-center py-2.5 rounded-lg font-medium hover-glow hover:bg-white/20 transition-all flex items-center justify-center gap-2">
+                    <button onClick={actions.openAuthModal} className="bg-white/10 text-white text-center py-2.5 rounded-lg font-medium hover-glow hover:bg-white/20 transition-all flex items-center justify-center gap-2">
                       <LoginIcon className="w-5 h-5" />
                       {t('login')}
                     </button>
-                    <button onClick={onLoginClick} className="bg-theme-gradient text-white text-center py-2.5 rounded-lg font-medium hover-glow transition-all">
+                    <button onClick={actions.openAuthModal} className="bg-theme-gradient text-white text-center py-2.5 rounded-lg font-medium hover-glow transition-all">
                       {t('registerAndPlay')}
                     </button>
                 </div>
